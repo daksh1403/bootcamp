@@ -1,0 +1,12 @@
+# Netlify build config — Next.js 15 (auto-detected; the @netlify/plugin-nextjs
+# OpenNext adapter is installed automatically, no plugin entry needed here).
+#
+# Secrets (TURSO_AUTH_TOKEN, ADMIN_PASSWORD, …) must be set in the Netlify UI,
+# NOT here — netlify.toml env vars are build-time only and end up in git.
+
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

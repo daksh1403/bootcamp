@@ -1,0 +1,41 @@
+{
+  "name": "bootcamp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "db:migrate": "tsx -e \"import('./src/lib/db').then(m => { m.getDb(); console.log('schema ready'); })\"",
+    "bootstrap": "tsx scripts/bootstrap.ts",
+    "seed:demo": "ALLOW_DEMO_SEED=1 tsx scripts/run-seed.ts",
+    "reset:prod": "node scripts/reset-prod.cjs"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "exceljs": "^4.4.0",
+    "next": "15.5.23",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.23",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.12",
+    "typescript": "^5",
+    "vitest": "^4.1.11",
+    "vitest-config": "0.0.1-security"
+  }
+}
