@@ -1,5 +1,6 @@
-# Netlify build config — Next.js 15 (auto-detected; the @netlify/plugin-nextjs
-# OpenNext adapter is installed automatically, no plugin entry needed here).
+# Netlify build config — Next.js 15 via the @netlify/plugin-nextjs OpenNext adapter.
+# The plugin is pinned as a devDependency and listed below so the adapter
+# reliably provisions the SSR/API functions (auto-detection alone did not).
 #
 # Secrets (TURSO_AUTH_TOKEN, ADMIN_PASSWORD, …) must be set in the Netlify UI,
 # NOT here — netlify.toml env vars are build-time only and end up in git.
@@ -10,3 +11,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    # default: no extra config needed

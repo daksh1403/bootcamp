@@ -36,6 +36,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.6
+      '@netlify/plugin-nextjs':
+        specifier: ^5.15.13
+        version: 5.15.13
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.3.3
@@ -546,6 +549,10 @@ packages:
 
   '@neon-rs/load@0.0.4':
     resolution: {integrity: sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw==}
+
+  '@netlify/plugin-nextjs@5.15.13':
+    resolution: {integrity: sha512-gBmWtgG13ZW4ytNMCvacfwZemtdtV/Ekc+6RBYvI5fndjmDvKxgFHylsw7oli+PHMGAtNqaJrN8QccGnDReu6A==}
+    engines: {node: '>=18.0.0'}
 
   '@next/env@15.5.23':
     resolution: {integrity: sha512-Mv3Z9hVbFcPnoLevsZ6rnX1TBtyHb5E17yN7HTPDXSXxeNsGBjUFrdbjRXKKXIOhfth7/cg6Ay7PZ2UFawaWsQ==}
@@ -3150,6 +3157,8 @@ snapshots:
     optional: true
 
   '@neon-rs/load@0.0.4': {}
+
+  '@netlify/plugin-nextjs@5.15.13': {}
 
   '@next/env@15.5.23': {}
 

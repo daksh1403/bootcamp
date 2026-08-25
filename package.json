@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@netlify/plugin-nextjs": "^5.15.13",
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
