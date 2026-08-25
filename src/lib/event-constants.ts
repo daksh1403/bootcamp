@@ -8,7 +8,7 @@ export const EVENT = {
   dateShort: "31 AUG 2026",
   venue: "AB1-404B Lab, VIT Chennai",
   organizer: "Code{Y}Gen — VIT Chennai",
-  resourcePerson: "Dr. Sakthivel",
+  resourcePerson: "Rupayan Roy (24BAI1229)",
   capacity: 50,
   crew: [
     { name: "Daksh Agarwal", role: "Event Lead + Technical Mentor" },
@@ -34,7 +34,7 @@ export const TIMELINE = [
   {
     time: "09:30 – 12:00",
     title: "CONTAINERIZE THE CHAOS",
-    desc: "Expert session and live demonstrations by Dr. Sakthivel.",
+    desc: "Expert session and live demonstrations by Rupayan Roy (24BAI1229).",
   },
   {
     time: "12:00 – 13:00",
