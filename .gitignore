@@ -45,3 +45,6 @@ next-env.d.ts
 *.db
 *.db-wal
 *.db-shm
+
+# Local Netlify folder
+.netlify
