@@ -1,4 +1,5 @@
-process.env.DATABASE_PATH = process.env.TEST_DB_PATH!;
+import { makeTempDbPath } from "./helpers/env";
+process.env.DATABASE_PATH = makeTempDbPath("mission-flow");
 
 import { describe, it, expect, beforeAll } from "vitest";
 

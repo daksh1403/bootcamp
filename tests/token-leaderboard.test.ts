@@ -1,4 +1,5 @@
-process.env.DATABASE_PATH = process.env.TEST_DB_PATH!;
+import { makeTempDbPath } from "./helpers/env";
+process.env.DATABASE_PATH = makeTempDbPath("token-leaderboard");
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { computeLeaderboard, type LeaderboardInputTeam } from "@/lib/leaderboard";

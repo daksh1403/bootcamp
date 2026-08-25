@@ -1,4 +1,4 @@
-import { createClient, type Client, type InValue } from "@libsql/client";
+import type { Client, InValue } from "@libsql/client";
 import path from "path";
 import fs from "fs";
 
@@ -36,6 +36,10 @@ function init(): Promise<Client> {
 
 async function doInit(): Promise<Client> {
   const target = resolveTarget();
+  // Lazy import: @libsql/client is only needed on Node (local dev / Netlify).
+  // On Cloudflare Workers the D1 adapter is used and this never executes, so the
+  // package stays out of the worker bundle (its workerd export is broken anyway).
+  const { createClient } = await import("@libsql/client");
   const client = createClient(target);
   if (!target.authToken) {
     try {
@@ -54,7 +58,107 @@ async function doInit(): Promise<Client> {
   return client;
 }
 
+// ---- Cloudflare D1 adapter ----
+// The schema is applied lazily on first request (CREATE TABLE IF NOT EXISTS),
+// so the first hit may be slightly slower on a brand-new D1 database.
+
+type D1Result = {
+  success: boolean;
+  meta: { changes?: number; last_row_id?: number };
+  results?: Record<string, unknown>[];
+};
+
+interface D1Prepared {
+  bind(...args: InValue[]): D1Prepared;
+  run(...args: InValue[]): Promise<D1Result>;
+  get(...args: InValue[]): Promise<Record<string, unknown> | null>;
+  all(...args: InValue[]): Promise<{ results: Record<string, unknown>[] }>;
+  first<T = Record<string, unknown>>(...args: InValue[]): Promise<T | null>;
+  raw(...args: InValue[]): Promise<unknown[][]>;
+}
+
+interface D1Like {
+  prepare(sql: string): D1Prepared;
+  exec(sql: string): Promise<{ count: number }>;
+  batch(statements: D1Prepared[]): Promise<D1Result[]>;
+}
+
+let d1SchemaReady: Promise<void> | null = null;
+
+function isD1Like(db: unknown): db is D1Like {
+  return !!db && typeof (db as D1Like).prepare === "function" && typeof (db as D1Like).exec === "function";
+}
+
+function getD1(): D1Like | null {
+  // The OpenNext Cloudflare worker entrypoint sets a context symbol on the
+  // global scope (Symbol.for("__cloudflare-context__")) for the duration of a
+  // request. When it's absent (local dev, Netlify, build) we use libsql below.
+  const context = (globalThis as Record<PropertyKey, unknown>)[Symbol.for("__cloudflare-context__")] as
+    | { env?: Record<string, unknown> }
+    | undefined;
+  const db = context?.env?.DB;
+  if (isD1Like(db)) return db;
+  return null;
+}
+
+async function ensureD1Schema(db: D1Like): Promise<void> {
+  if (!d1SchemaReady) {
+    d1SchemaReady = (async () => {
+      // D1 enforces foreign keys by default. db.exec() chokes on the
+      // multi-statement SCHEMA string, so split it and run each statement via
+      // batch(). CREATE TABLE IF NOT EXISTS keeps this idempotent on warm
+      // instances and against an already-migrated database.
+      const statements = SCHEMA
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((s) => `${s};`);
+      await db.batch(statements.map((sql) => db.prepare(sql)));
+    })().catch((e) => {
+      d1SchemaReady = null;
+      throw e;
+    });
+  }
+  return d1SchemaReady;
+}
+
+function makeD1Db(db: D1Like): Db {
+  const schemaReady = ensureD1Schema(db);
+  return {
+    prepare<T = Record<string, unknown>>(sql: string): Stmt<T> {
+      const stmt = db.prepare(sql);
+      return {
+        run: async (...args: InValue[]): Promise<RunResult> => {
+          await schemaReady;
+          const r = await stmt.bind(...args).run();
+          return { changes: r.meta.changes ?? 0, lastInsertRowid: r.meta.last_row_id ?? 0 };
+        },
+        get: async (...args: InValue[]): Promise<T | undefined> => {
+          await schemaReady;
+          const row = await stmt.bind(...args).first<T>();
+          return row ?? undefined;
+        },
+        all: async (...args: InValue[]): Promise<T[]> => {
+          await schemaReady;
+          const r = await stmt.bind(...args).all();
+          return (r.results as T[]) ?? [];
+        },
+      };
+    },
+    exec: async (sql: string) => {
+      await schemaReady;
+      await db.exec(sql);
+    },
+  };
+}
+
 export function getDb(): Db {
+  // Cloudflare Workers: the OpenNext entrypoint exposes env.DB via the context
+  // symbol. When present, use D1; otherwise (local dev, Netlify) use libsql.
+  const d1 = getD1();
+  if (d1) return makeD1Db(d1);
+
+  // Local dev + Netlify (Turso / local SQLite file): libsql client.
   return {
     prepare<T = Record<string, unknown>>(sql: string): Stmt<T> {
       return {
